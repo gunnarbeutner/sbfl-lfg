@@ -2,20 +2,20 @@
 using System.Runtime.InteropServices;
 
 namespace sbfl_lfg {
+    [StructLayout(LayoutKind.Sequential)]
+    struct LASTINPUTINFO {
+        public static readonly int SizeOf =
+               Marshal.SizeOf(typeof(LASTINPUTINFO));
+
+        [MarshalAs(UnmanagedType.U4)]
+        public int cbSize;
+        [MarshalAs(UnmanagedType.U4)]
+        public int dwTime;
+    }
+
     class Utility {
         [DllImport("user32.dll")]
-        static extern bool GetLastInputInfo(out LASTINPUTINFO plii);
-
-        [StructLayout(LayoutKind.Sequential)]
-        struct LASTINPUTINFO {
-            public static readonly int SizeOf =
-                   Marshal.SizeOf(typeof(LASTINPUTINFO));
-
-            [MarshalAs(UnmanagedType.U4)]
-            public int cbSize;
-            [MarshalAs(UnmanagedType.U4)]
-            public int dwTime;
-        }
+        static public extern bool GetLastInputInfo(out LASTINPUTINFO plii);
 
         [DllImport("user32.dll")]
         static public extern bool ShowScrollBar(IntPtr hWnd, int wBar, bool bShow);

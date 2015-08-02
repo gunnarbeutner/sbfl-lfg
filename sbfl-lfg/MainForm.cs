@@ -10,12 +10,17 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Dynamitey;
 using Json;
+using System.Runtime.InteropServices;
 
 namespace sbfl_lfg {
     public partial class MainForm : Form {
         private int SYSMENU_ABOUT_ID = 0x1;
 
         private bool _AppExiting = false;
+
+        private const int UpdateInterval = 60;
+        private int _UpdateTick = 0;
+
         private Dictionary<string, GameView> _Games = new Dictionary<string, GameView>();
     
         public MainForm() {
@@ -49,7 +54,10 @@ namespace sbfl_lfg {
         }
 
         private void btnAdd_Click(object sender, EventArgs e) {
-            string game = cboGames.Text;
+            if (lvwGames.SelectedItems.Count != 1)
+                return;
+
+            string game = lvwGames.SelectedItems[0].Text;
 
             if (game == "" || _Games.ContainsKey(game))
                 return;
@@ -106,7 +114,7 @@ namespace sbfl_lfg {
             height += Height - flpGames.Height + 25;
 
             if (_Games.Values.Count == 0)
-                height = 80;
+                height = 254;
 
             MaximumSize = new Size(MaximumSize.Width, height);
 
@@ -122,34 +130,74 @@ namespace sbfl_lfg {
         }
 
         private void tmrUpdate_Tick(object sender, EventArgs e) {
-            try {
-                UpdateGames();
-            } catch (WebException) {
-                /* Do nothing. */
+            _UpdateTick += tmrUpdate.Interval / 1000;
+
+            if (_UpdateTick > UpdateInterval) {
+                _UpdateTick = 0;
+
+                lblRefreshStatus.Text = "Updating...";
+                Refresh();
+
+                try {
+                    UpdateGames();
+
+                    LASTINPUTINFO lii = new LASTINPUTINFO();
+                    lii.cbSize = Marshal.SizeOf(lii);
+                    Utility.GetLastInputInfo(out lii);
+
+                    Program.BotClient.SetIdleTime((Environment.TickCount - lii.dwTime) / 1000);
+                } catch (WebException) {
+                    /* Do nothing. */
+                }
             }
+
+            lblRefreshStatus.Text = string.Format("Next update in {0} seconds", UpdateInterval - _UpdateTick);
         }
 
         private void UpdateGames() {
-            string text = cboGames.Text;
-            cboGames.Items.Clear();
+            var lobbies = Program.BotClient.GetLobbies();
+
+            string selected = null;
+                
+            if (lvwGames.SelectedItems.Count > 0)
+                selected = lvwGames.SelectedItems[0].Text;
+
+            lvwGames.Items.Clear();
             foreach (JsonObject game in Program.BotClient.GetMyGames()) {
                 string name = Dynamic.InvokeGet(game, "name");
-                cboGames.Items.Add(name);
+                string title = name;
+                LobbyInfo lobby;
+
+                ListViewItem lvi = new ListViewItem();
+                lvi.Text = name;
+
+                if (lobbies.TryGetValue(name, out lobby))
+                    lvi.SubItems.Add(lobby.Players.Count.ToString());
+                else
+                    lvi.SubItems.Add("0");
+
+                if (name == selected)
+                    lvi.Selected = true;
+
+                lvwGames.Items.Add(lvi);
             }
-            cboGames.Text = text;
 
             Dictionary<string, GameView> games = new Dictionary<string, GameView>();
 
             List<Control> toAdd = new List<Control>();
 
-            foreach (JsonObject game in Program.BotClient.GetMyLobbies()) {
-                string name = Dynamic.InvokeGet(game, "name");
+            foreach (var game in lobbies) {
+                string name = game.Key;
 
-                if (_Games.ContainsKey(name))
+                if (!game.Value.Players.ContainsKey(Properties.Settings.Default.SBFLUsername))
+                    continue;
+
+                if (_Games.ContainsKey(name)) {
+                    GameView view = _Games[name];
+                    view.UpdateInfo(game.Value);
                     games.Add(name, _Games[name]);
-                else {
-                    GameView view = new GameView();
-                    view.Text = name;
+                }  else {
+                    GameView view = new GameView(game.Value);
                     view.RemoveClicked += GameView_RemoveClicked;
 
                     games.Add(name, view);
@@ -192,6 +240,11 @@ namespace sbfl_lfg {
             if ((m.Msg == Utility.WM_SYSCOMMAND) && ((int)m.WParam == SYSMENU_ABOUT_ID)) {
                 new AboutForm().ShowDialog(this);
             }
+        }
+
+        private void lblRefreshStatus_Click(object sender, EventArgs e) {
+            _UpdateTick = UpdateInterval;
+            tmrUpdate_Tick(null, null);
         }
     }
 }

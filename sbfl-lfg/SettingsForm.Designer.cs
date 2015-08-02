@@ -25,10 +25,10 @@
         private void InitializeComponent() {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
             this.grpCredentials = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtUsername = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
             this.txtPassword = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.txtUsername = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.grpCredentials.SuspendLayout();
@@ -47,21 +47,13 @@
             this.grpCredentials.TabStop = false;
             this.grpCredentials.Text = "SBFL Credentials";
             // 
-            // label1
+            // txtPassword
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 27);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(58, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Username:";
-            // 
-            // txtUsername
-            // 
-            this.txtUsername.Location = new System.Drawing.Point(70, 24);
-            this.txtUsername.Name = "txtUsername";
-            this.txtUsername.Size = new System.Drawing.Size(218, 20);
-            this.txtUsername.TabIndex = 1;
+            this.txtPassword.Location = new System.Drawing.Point(70, 50);
+            this.txtPassword.Name = "txtPassword";
+            this.txtPassword.PasswordChar = '*';
+            this.txtPassword.Size = new System.Drawing.Size(218, 20);
+            this.txtPassword.TabIndex = 3;
             // 
             // label2
             // 
@@ -72,13 +64,21 @@
             this.label2.TabIndex = 2;
             this.label2.Text = "Password:";
             // 
-            // txtPassword
+            // txtUsername
             // 
-            this.txtPassword.Location = new System.Drawing.Point(70, 50);
-            this.txtPassword.Name = "txtPassword";
-            this.txtPassword.PasswordChar = '*';
-            this.txtPassword.Size = new System.Drawing.Size(218, 20);
-            this.txtPassword.TabIndex = 3;
+            this.txtUsername.Location = new System.Drawing.Point(70, 24);
+            this.txtUsername.Name = "txtUsername";
+            this.txtUsername.Size = new System.Drawing.Size(218, 20);
+            this.txtUsername.TabIndex = 1;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 27);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(58, 13);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Username:";
             // 
             // btnOK
             // 
@@ -103,6 +103,7 @@
             // 
             // SettingsForm
             // 
+            this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(326, 142);
