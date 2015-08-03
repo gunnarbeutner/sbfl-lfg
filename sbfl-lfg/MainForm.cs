@@ -64,13 +64,13 @@ namespace sbfl_lfg {
 
             try {
                 Program.BotClient.JoinLobby(game);
-            } catch (WebException) {
+            } catch (Exception) {
                 MessageBox.Show(this, "Could not join the lobby '" + game + "'.", "SBFL LFG", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             try {
                 UpdateGames();
-            } catch (WebException) {
+            } catch (Exception) {
                 /* Do nothing. */
             }
         }
@@ -81,13 +81,13 @@ namespace sbfl_lfg {
 
             try {
                 Program.BotClient.LeaveLobby(gvw.Text);
-            } catch (WebException) {
+            } catch (Exception) {
                 MessageBox.Show(this, "Could not remove you from the lobby '" + game + "'.", "SBFL LFG", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             try {
                 UpdateGames();
-            } catch (WebException) {
+            } catch (Exception) {
                 /* Do nothing. */
             }
         }
@@ -146,7 +146,7 @@ namespace sbfl_lfg {
                     Utility.GetLastInputInfo(out lii);
 
                     Program.BotClient.SetIdleTime((Environment.TickCount - lii.dwTime) / 1000);
-                } catch (WebException) {
+                } catch (Exception) {
                     /* Do nothing. */
                 }
             }
