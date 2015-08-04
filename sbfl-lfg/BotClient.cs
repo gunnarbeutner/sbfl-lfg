@@ -21,6 +21,7 @@ namespace sbfl_lfg {
     class BotClient {
         public static String LfgUrl = "https://sbfl.eu/bot/lfg.php";
         private WebClient _Client;
+        private object _SyncObject = new object();
    
         public BotClient(ICredentials creds) {
             _Client = new WebClient();
@@ -28,17 +29,26 @@ namespace sbfl_lfg {
         }
 
         public Json.JsonArray GetGames() {
-            string response = _Client.DownloadString(LfgUrl + "?action=games");
+            string response;
+            lock (_SyncObject) {
+                response = _Client.DownloadString(LfgUrl + "?action=games");
+            }
             return Json.JsonParser.Deserialize(response);
         }
 
         public JsonArray GetMyGames() {
-            string response = _Client.DownloadString(LfgUrl + "?action=my-games");
+            string response;
+            lock (_SyncObject) {
+                response = _Client.DownloadString(LfgUrl + "?action=my-games");
+            }
             return Json.JsonParser.Deserialize(response);
         }
 
         public Dictionary<string, LobbyInfo> GetLobbies() {
-            string response = _Client.DownloadString(LfgUrl + "?action=lobbies");
+            string response;
+            lock (_SyncObject) {
+                response = _Client.DownloadString(LfgUrl + "?action=lobbies");
+            }
 
             Dictionary<string, LobbyInfo> result = new Dictionary<string, LobbyInfo>();
 
@@ -59,15 +69,21 @@ namespace sbfl_lfg {
         }
 
         public void JoinLobby(string game) {
-            _Client.DownloadString(LfgUrl + "?action=join-lobby&name=" + Uri.EscapeDataString(game));
+            lock (_SyncObject) {
+                _Client.DownloadString(LfgUrl + "?action=join-lobby&name=" + Uri.EscapeDataString(game));
+            }
         }
 
         public void LeaveLobby(string game) {
-            _Client.DownloadString(LfgUrl + "?action=leave-lobby&name=" + Uri.EscapeDataString(game));
+            lock (_SyncObject) {
+                _Client.DownloadString(LfgUrl + "?action=leave-lobby&name=" + Uri.EscapeDataString(game));
+            }
         }
 
         public void SetIdleTime(int idle) {
-            _Client.DownloadString(LfgUrl + "?action=set-idle&idle=" + idle.ToString());
+            lock (_SyncObject) {
+                _Client.DownloadString(LfgUrl + "?action=set-idle&idle=" + idle.ToString());
+            }
         }
     }
 }

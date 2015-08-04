@@ -10,7 +10,9 @@ using System.Windows.Forms;
 
 namespace sbfl_lfg {
     public partial class GameView : UserControl {
-        public event EventHandler RemoveClicked;
+        public GameView() {
+            InitializeComponent();
+        }
 
         public GameView(LobbyInfo lobby) {
             InitializeComponent();
@@ -29,11 +31,6 @@ namespace sbfl_lfg {
             set {
                 grpGame.Text = value;
             }
-        }
-
-        private void btnRemove_Click(object sender, EventArgs e) {
-            if (RemoveClicked != null)
-                RemoveClicked(this, e);
         }
 
         public void UpdateInfo(LobbyInfo lobby) {

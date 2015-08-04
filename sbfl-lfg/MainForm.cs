@@ -11,23 +11,23 @@ using System.Windows.Forms;
 using Dynamitey;
 using Json;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace sbfl_lfg {
     public partial class MainForm : Form {
         private int SYSMENU_ABOUT_ID = 0x1;
 
         private bool _AppExiting = false;
+        private bool _UpdatingGames = false;
+        private object _SyncObject = new object();
 
         private const int UpdateInterval = 60;
         private int _UpdateTick = 0;
-
-        private Dictionary<string, GameView> _Games = new Dictionary<string, GameView>();
-    
+   
         public MainForm() {
             InitializeComponent();
 
             UpdateGames();
-            ResizeForm();
         }
 
         private void tsmPlay_Click(object sender, EventArgs e) {
@@ -51,88 +51,14 @@ namespace sbfl_lfg {
                 Hide();
                 e.Cancel = true;
             }
-        }
 
-        private void btnAdd_Click(object sender, EventArgs e) {
-            if (lvwGames.SelectedItems.Count != 1)
-                return;
-
-            string game = lvwGames.SelectedItems[0].Text;
-
-            if (game == "" || _Games.ContainsKey(game))
-                return;
-
-            try {
-                Program.BotClient.JoinLobby(game);
-            } catch (Exception) {
-                MessageBox.Show(this, "Could not join the lobby '" + game + "'.", "SBFL LFG", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            try {
-                UpdateGames();
-            } catch (Exception) {
-                /* Do nothing. */
-            }
-        }
-
-        private void GameView_RemoveClicked(object sender, EventArgs e) {
-            GameView gvw = (GameView)sender;
-            string game = gvw.Text;
-
-            try {
-                Program.BotClient.LeaveLobby(gvw.Text);
-            } catch (Exception) {
-                MessageBox.Show(this, "Could not remove you from the lobby '" + game + "'.", "SBFL LFG", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            try {
-                UpdateGames();
-            } catch (Exception) {
-                /* Do nothing. */
-            }
-        }
-
-        private void flpGames_SizeChanged(object sender, EventArgs e) {
-            ResizeGameViews();
-        }
-
-        private void ResizeGameViews() {
-            flpGames.SuspendLayout();
-            foreach (Control control in flpGames.Controls) {
-                control.Width = flpGames.ClientSize.Width - 10;
-            }
-            flpGames.ResumeLayout();
-        }
-
-        private void ResizeForm() {
-            int height = 0;
-
-            foreach (GameView gvw in _Games.Values) {
-                height += gvw.Height;
-            }
-
-            height += Height - flpGames.Height + 25;
-
-            if (_Games.Values.Count == 0)
-                height = 254;
-
-            MaximumSize = new Size(MaximumSize.Width, height);
-
-            if (_Games.Values.Count <= 2)
-                Height = height;
-
-            if (_Games.Values.Count <= 1)
-                MinimumSize = new Size(MinimumSize.Width, MaximumSize.Height);
-        }
-
-        private void flpGames_Resize(object sender, EventArgs e) {
-            Utility.ShowScrollBar(flpGames.Handle, Utility.SB_HORZ, false);
+            SetUpdateEvent(false);
         }
 
         private void tmrUpdate_Tick(object sender, EventArgs e) {
             _UpdateTick += tmrUpdate.Interval / 1000;
 
-            if (_UpdateTick > UpdateInterval) {
+            if (_UpdateTick >= UpdateInterval) {
                 _UpdateTick = 0;
 
                 lblRefreshStatus.Text = "Updating...";
@@ -154,76 +80,74 @@ namespace sbfl_lfg {
             lblRefreshStatus.Text = string.Format("Next update in {0} seconds", UpdateInterval - _UpdateTick);
         }
 
-        private void UpdateGames() {
-            var lobbies = Program.BotClient.GetLobbies();
+        private void InvokeForm(MethodInvoker mi) {
+            if (InvokeRequired)
+                Invoke(mi);
+            else
+                mi();
+        }
 
-            string selected = null;
-                
-            if (lvwGames.SelectedItems.Count > 0)
-                selected = lvwGames.SelectedItems[0].Text;
+        private void UpdateGamesSync() {
+            lock (_SyncObject) {
+                Dictionary<string, LobbyInfo> lobbies = Program.BotClient.GetLobbies();
 
-            lvwGames.Items.Clear();
-            foreach (JsonObject game in Program.BotClient.GetMyGames()) {
-                string name = Dynamic.InvokeGet(game, "name");
-                string title = name;
-                LobbyInfo lobby;
+                string selected = null;
 
-                ListViewItem lvi = new ListViewItem();
-                lvi.Text = name;
+                InvokeForm(delegate {
+                    if (lvwGames.SelectedItems.Count > 0)
+                        selected = lvwGames.SelectedItems[0].Text;
 
-                if (lobbies.TryGetValue(name, out lobby))
-                    lvi.SubItems.Add(lobby.Players.Count.ToString());
-                else
-                    lvi.SubItems.Add("0");
+                    _UpdatingGames = true;
 
-                if (name == selected)
-                    lvi.Selected = true;
+                    SetUpdateEvent(false);
+                });
 
-                lvwGames.Items.Add(lvi);
-            }
+                List<ListViewItem> items = new List<ListViewItem>();
 
-            Dictionary<string, GameView> games = new Dictionary<string, GameView>();
+                foreach (JsonObject game in Program.BotClient.GetMyGames()) {
+                    string name = Dynamic.InvokeGet(game, "name");
+                    string title = name;
+                    LobbyInfo lobby;
 
-            List<Control> toAdd = new List<Control>();
+                    ListViewItem lvi = new ListViewItem();
+                    lvi.Text = name;
 
-            foreach (var game in lobbies) {
-                string name = game.Key;
+                    if (lobbies.TryGetValue(name, out lobby)) {
+                        lvi.SubItems.Add(lobby.Players.Count.ToString());
 
-                if (!game.Value.Players.ContainsKey(Properties.Settings.Default.SBFLUsername))
-                    continue;
+                        if (lobby.Players.ContainsKey(Properties.Settings.Default.SBFLUsername))
+                            lvi.Checked = true;
 
-                if (_Games.ContainsKey(name)) {
-                    GameView view = _Games[name];
-                    view.UpdateInfo(game.Value);
-                    games.Add(name, _Games[name]);
-                }  else {
-                    GameView view = new GameView(game.Value);
-                    view.RemoveClicked += GameView_RemoveClicked;
+                        lvi.Tag = lobby;
+                    } else {
+                        lvi.SubItems.Add("0");
+                        lvi.Tag = new LobbyInfo();
+                    }
 
-                    games.Add(name, view);
-                    toAdd.Add(view);
+                    if (name == selected) {
+                        lvi.Selected = true;
+                        InvokeForm(delegate {
+                            gvwGame.UpdateInfo(lobby);
+                        });
+                    }
+
+                    items.Add(lvi);
                 }
+
+                InvokeForm(delegate {
+                    lvwGames.Items.Clear();
+                    lvwGames.Items.AddRange(items.ToArray());
+
+                    SetUpdateEvent(true);
+
+                    _UpdatingGames = false;
+                });
             }
+        }
 
-            _Games = games;
-
-            List<Control> toRemove = new List<Control>();
-
-            foreach (Control control in flpGames.Controls) {
-                if (!_Games.ContainsKey(control.Text))
-                    toRemove.Add(control);
-            }
-
-            foreach (Control control in toRemove) {
-                flpGames.Controls.Remove(control);
-            }
-
-            foreach (GameView view in toAdd) {
-                flpGames.Controls.Add(view);
-            }
-
-            ResizeGameViews();
-            ResizeForm();
+        private void UpdateGames() {
+            Thread t = new Thread(UpdateGamesSync);
+            t.Start();
         }
 
         protected override void OnHandleCreated(EventArgs e) {
@@ -245,6 +169,57 @@ namespace sbfl_lfg {
         private void lblRefreshStatus_Click(object sender, EventArgs e) {
             _UpdateTick = UpdateInterval;
             tmrUpdate_Tick(null, null);
+        }
+
+        private void lvwGames_ItemChecked(object sender, ItemCheckedEventArgs e) {
+            if (_UpdatingGames)
+                return;
+
+            string game = e.Item.Text;
+
+            if (e.Item.Checked) {
+                try {
+                    Program.BotClient.JoinLobby(game);
+                } catch (Exception) {
+                    MessageBox.Show(this, "Could not join the lobby '" + game + "'.", "SBFL LFG", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            } else {
+                try {
+                    Program.BotClient.LeaveLobby(game);
+                } catch (Exception) {
+                    MessageBox.Show(this, "Could not remove you from the lobby '" + game + "'.", "SBFL LFG", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            try {
+                UpdateGames();
+            } catch (Exception ex) {
+                MessageBox.Show(this, ex.ToString());
+                /* Do nothing. */
+            }
+        }
+
+        private void lvwGames_SelectedIndexChanged(object sender, EventArgs e) {
+            if (lvwGames.SelectedItems.Count == 0)
+                return;
+
+            ListViewItem lvi = lvwGames.SelectedItems[0];
+
+            string game = lvi.Text;
+            LobbyInfo lobby = (LobbyInfo)lvi.Tag;
+
+            gvwGame.UpdateInfo(lobby);
+        }
+
+        private void SetUpdateEvent(bool add) {
+            if (add && Visible)
+                lvwGames.ItemChecked += lvwGames_ItemChecked;
+            else
+                lvwGames.ItemChecked -= lvwGames_ItemChecked;
+        }
+
+        private void MainForm_Shown(object sender, EventArgs e) {
+            SetUpdateEvent(true);
         }
     }
 }

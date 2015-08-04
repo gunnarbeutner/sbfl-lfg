@@ -31,16 +31,21 @@
             this.tsmSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmQuit = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnAdd = new System.Windows.Forms.Button();
-            this.flpGames = new System.Windows.Forms.FlowLayoutPanel();
             this.tmrUpdate = new System.Windows.Forms.Timer(this.components);
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblRefreshStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.scPanels = new System.Windows.Forms.SplitContainer();
             this.lvwGames = new System.Windows.Forms.ListView();
             this.colGame = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colPlayers = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.gvwGame = new sbfl_lfg.GameView();
             this.cmsTrayMenu.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.scPanels)).BeginInit();
+            this.scPanels.Panel1.SuspendLayout();
+            this.scPanels.Panel2.SuspendLayout();
+            this.scPanels.SuspendLayout();
             this.SuspendLayout();
             // 
             // nicTrayIcon
@@ -88,32 +93,6 @@
             this.tsmQuit.Text = "&Quit";
             this.tsmQuit.Click += new System.EventHandler(this.tsmQuit_Click);
             // 
-            // btnAdd
-            // 
-            this.btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAdd.Location = new System.Drawing.Point(334, 12);
-            this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(71, 21);
-            this.btnAdd.TabIndex = 3;
-            this.btnAdd.Text = "LFG!";
-            this.btnAdd.UseVisualStyleBackColor = true;
-            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
-            // 
-            // flpGames
-            // 
-            this.flpGames.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.flpGames.AutoScroll = true;
-            this.flpGames.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flpGames.Location = new System.Drawing.Point(12, 189);
-            this.flpGames.Name = "flpGames";
-            this.flpGames.Size = new System.Drawing.Size(393, 149);
-            this.flpGames.TabIndex = 4;
-            this.flpGames.WrapContents = false;
-            this.flpGames.SizeChanged += new System.EventHandler(this.flpGames_SizeChanged);
-            this.flpGames.Resize += new System.EventHandler(this.flpGames_Resize);
-            // 
             // tmrUpdate
             // 
             this.tmrUpdate.Enabled = true;
@@ -124,9 +103,9 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.lblRefreshStatus});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 349);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 339);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(417, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(341, 22);
             this.statusStrip1.TabIndex = 5;
             this.statusStrip1.Text = "ssStatus";
             // 
@@ -137,20 +116,43 @@
             this.lblRefreshStatus.Text = "Next update in 60 seconds";
             this.lblRefreshStatus.Click += new System.EventHandler(this.lblRefreshStatus_Click);
             // 
+            // scPanels
+            // 
+            this.scPanels.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.scPanels.Location = new System.Drawing.Point(12, 12);
+            this.scPanels.Name = "scPanels";
+            this.scPanels.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // scPanels.Panel1
+            // 
+            this.scPanels.Panel1.Controls.Add(this.lvwGames);
+            // 
+            // scPanels.Panel2
+            // 
+            this.scPanels.Panel2.Controls.Add(this.gvwGame);
+            this.scPanels.Size = new System.Drawing.Size(317, 324);
+            this.scPanels.SplitterDistance = 163;
+            this.scPanels.TabIndex = 8;
+            // 
             // lvwGames
             // 
-            this.lvwGames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.lvwGames.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.lvwGames.CheckBoxes = true;
             this.lvwGames.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.colGame,
             this.colPlayers});
-            this.lvwGames.Location = new System.Drawing.Point(12, 12);
+            this.lvwGames.Location = new System.Drawing.Point(0, 0);
             this.lvwGames.MultiSelect = false;
             this.lvwGames.Name = "lvwGames";
-            this.lvwGames.Size = new System.Drawing.Size(316, 171);
-            this.lvwGames.TabIndex = 6;
+            this.lvwGames.Size = new System.Drawing.Size(317, 161);
+            this.lvwGames.TabIndex = 7;
             this.lvwGames.UseCompatibleStateImageBehavior = false;
             this.lvwGames.View = System.Windows.Forms.View.Details;
+            this.lvwGames.SelectedIndexChanged += new System.EventHandler(this.lvwGames_SelectedIndexChanged);
             // 
             // colGame
             // 
@@ -161,25 +163,37 @@
             // 
             this.colPlayers.Text = "Players";
             // 
+            // gvwGame
+            // 
+            this.gvwGame.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gvwGame.Location = new System.Drawing.Point(0, 0);
+            this.gvwGame.Name = "gvwGame";
+            this.gvwGame.Size = new System.Drawing.Size(317, 157);
+            this.gvwGame.TabIndex = 8;
+            this.gvwGame.Text = "Lobby";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(417, 371);
-            this.Controls.Add(this.lvwGames);
+            this.ClientSize = new System.Drawing.Size(341, 361);
+            this.Controls.Add(this.scPanels);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.flpGames);
-            this.Controls.Add(this.btnAdd);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(433, 410);
-            this.MinimumSize = new System.Drawing.Size(271, 254);
+            this.MinimumSize = new System.Drawing.Size(357, 400);
             this.Name = "MainForm";
             this.Text = "SBFL LFG";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.cmsTrayMenu.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.scPanels.Panel1.ResumeLayout(false);
+            this.scPanels.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.scPanels)).EndInit();
+            this.scPanels.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -193,14 +207,15 @@
         private System.Windows.Forms.ToolStripMenuItem tsmSettings;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem tsmQuit;
-        private System.Windows.Forms.Button btnAdd;
-        private System.Windows.Forms.FlowLayoutPanel flpGames;
         private System.Windows.Forms.Timer tmrUpdate;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel lblRefreshStatus;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.SplitContainer scPanels;
         private System.Windows.Forms.ListView lvwGames;
         private System.Windows.Forms.ColumnHeader colGame;
         private System.Windows.Forms.ColumnHeader colPlayers;
+        private GameView gvwGame;
     }
 }
 
