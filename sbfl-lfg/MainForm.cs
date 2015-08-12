@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Net;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Dynamitey;
 using Json;
@@ -91,12 +84,9 @@ namespace sbfl_lfg {
             lock (_SyncObject) {
                 Dictionary<string, LobbyInfo> lobbies = Program.BotClient.GetLobbies();
 
-                string selected = null;
+                string selected = gvwGame.Text;
 
                 InvokeForm(delegate {
-                    if (lvwGames.SelectedItems.Count > 0)
-                        selected = lvwGames.SelectedItems[0].Text;
-
                     _UpdatingGames = true;
 
                     SetUpdateEvent(false);
@@ -112,17 +102,18 @@ namespace sbfl_lfg {
                     ListViewItem lvi = new ListViewItem();
                     lvi.Text = name;
 
-                    if (lobbies.TryGetValue(name, out lobby)) {
-                        lvi.SubItems.Add(lobby.Players.Count.ToString());
-
-                        if (lobby.Players.ContainsKey(Properties.Settings.Default.SBFLUsername))
-                            lvi.Checked = true;
-
-                        lvi.Tag = lobby;
-                    } else {
-                        lvi.SubItems.Add("0");
-                        lvi.Tag = new LobbyInfo();
+                    if (!lobbies.TryGetValue(name, out lobby)) {
+                        lobby = new LobbyInfo();
+                        lobby.Name = name;
+                        lobby.Players = new Dictionary<string, PlayerInfo>();
                     }
+
+                    lvi.SubItems.Add(lobby.Players.Count.ToString());
+
+                    if (lobby.Players.ContainsKey(Properties.Settings.Default.SBFLUsername))
+                        lvi.Checked = true;
+
+                    lvi.Tag = lobby;
 
                     if (name == selected) {
                         lvi.Selected = true;
@@ -178,8 +169,14 @@ namespace sbfl_lfg {
             string game = e.Item.Text;
 
             if (e.Item.Checked) {
+                JoinLobbyForm jlf = new JoinLobbyForm(game);
+                if (jlf.ShowDialog(this) != DialogResult.OK) {
+                    e.Item.Checked = false;
+                    return;
+                }
+
                 try {
-                    Program.BotClient.JoinLobby(game);
+                    Program.BotClient.JoinLobby(game, jlf.From, jlf.To);
                 } catch (Exception) {
                     MessageBox.Show(this, "Could not join the lobby '" + game + "'.", "SBFL LFG", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -220,6 +217,15 @@ namespace sbfl_lfg {
 
         private void MainForm_Shown(object sender, EventArgs e) {
             SetUpdateEvent(true);
+        }
+
+        private void MainForm_Load(object sender, EventArgs e) {
+            if (Properties.Settings.Default.ShowTrayHint) {
+                Properties.Settings.Default.ShowTrayHint = false;
+                Properties.Settings.Default.Save();
+
+                nicTrayIcon.ShowBalloonTip(5000, "SBFL LFG", "You can open the client by double-clicking on this icon.", ToolTipIcon.Info);
+            }
         }
     }
 }

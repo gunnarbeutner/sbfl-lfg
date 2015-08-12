@@ -46,5 +46,17 @@ namespace sbfl_lfg.Properties {
                 this["SBFLPassword"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowTrayHint {
+            get {
+                return ((bool)(this["ShowTrayHint"]));
+            }
+            set {
+                this["ShowTrayHint"] = value;
+            }
+        }
     }
 }

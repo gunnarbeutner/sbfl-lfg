@@ -6,6 +6,7 @@ using Json;
 using Microsoft.CSharp.RuntimeBinder;
 using System.Runtime.CompilerServices;
 using Dynamitey;
+using System.Globalization;
 
 namespace sbfl_lfg {
     public struct LobbyInfo {
@@ -15,11 +16,14 @@ namespace sbfl_lfg {
 
     public struct PlayerInfo {
         public string Name;
-        public int Idle;
+        public double Idle;
+        public DateTime? From;
+        public DateTime? To;
     }
 
     class BotClient {
         public static String LfgUrl = "https://sbfl.eu/bot/lfg.php";
+        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private WebClient _Client;
         private object _SyncObject = new object();
    
@@ -59,7 +63,15 @@ namespace sbfl_lfg {
                 foreach (Dictionary<string, object> player in Dynamic.InvokeGet(lobby, "players")) {
                     PlayerInfo pi;
                     pi.Name = (string)player["name"];
-                    pi.Idle = int.Parse((string)player["idle"]);
+                    pi.Idle = (double)player["idle"];
+                    pi.From = UnixEpoch.AddSeconds((double)player["from"]);
+
+                    double to = (double)player["to"];
+                    if (to == 0)
+                        pi.To = null;
+                    else
+                        pi.To = UnixEpoch.AddSeconds(to);
+
                     li.Players.Add(pi.Name, pi);
                 }
                 result.Add(li.Name, li);
@@ -68,9 +80,17 @@ namespace sbfl_lfg {
             return result;
         }
 
-        public void JoinLobby(string game) {
+        public void JoinLobby(string game, DateTime? from, DateTime? to) {
+            string url = LfgUrl + "?action=join-lobby&name=" + Uri.EscapeDataString(game);
+
+            if (from.HasValue)
+                url += "&from=" + from.Value.ToUniversalTime().Subtract(UnixEpoch).TotalSeconds.ToString(CultureInfo.InvariantCulture);
+
+            if (to.HasValue)
+                url += "&to=" + to.Value.ToUniversalTime().Subtract(UnixEpoch).TotalSeconds.ToString(CultureInfo.InvariantCulture);
+
             lock (_SyncObject) {
-                _Client.DownloadString(LfgUrl + "?action=join-lobby&name=" + Uri.EscapeDataString(game));
+                _Client.DownloadString(url);
             }
         }
 

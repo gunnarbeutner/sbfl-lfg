@@ -25,6 +25,7 @@
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            System.Windows.Forms.StatusStrip statusStrip1;
             this.nicTrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.cmsTrayMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tsmPlay = new System.Windows.Forms.ToolStripMenuItem();
@@ -32,16 +33,15 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsmQuit = new System.Windows.Forms.ToolStripMenuItem();
             this.tmrUpdate = new System.Windows.Forms.Timer(this.components);
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblRefreshStatus = new System.Windows.Forms.ToolStripStatusLabel();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.scPanels = new System.Windows.Forms.SplitContainer();
             this.lvwGames = new System.Windows.Forms.ListView();
             this.colGame = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colPlayers = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gvwGame = new sbfl_lfg.GameView();
+            statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.cmsTrayMenu.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
+            statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.scPanels)).BeginInit();
             this.scPanels.Panel1.SuspendLayout();
             this.scPanels.Panel2.SuspendLayout();
@@ -101,13 +101,13 @@
             // 
             // statusStrip1
             // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.lblRefreshStatus});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 339);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(341, 22);
-            this.statusStrip1.TabIndex = 5;
-            this.statusStrip1.Text = "ssStatus";
+            statusStrip1.Location = new System.Drawing.Point(0, 354);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new System.Drawing.Size(424, 22);
+            statusStrip1.TabIndex = 5;
+            statusStrip1.Text = "ssStatus";
             // 
             // lblRefreshStatus
             // 
@@ -132,8 +132,8 @@
             // scPanels.Panel2
             // 
             this.scPanels.Panel2.Controls.Add(this.gvwGame);
-            this.scPanels.Size = new System.Drawing.Size(317, 324);
-            this.scPanels.SplitterDistance = 163;
+            this.scPanels.Size = new System.Drawing.Size(400, 339);
+            this.scPanels.SplitterDistance = 170;
             this.scPanels.TabIndex = 8;
             // 
             // lvwGames
@@ -148,7 +148,7 @@
             this.lvwGames.Location = new System.Drawing.Point(0, 0);
             this.lvwGames.MultiSelect = false;
             this.lvwGames.Name = "lvwGames";
-            this.lvwGames.Size = new System.Drawing.Size(317, 161);
+            this.lvwGames.Size = new System.Drawing.Size(400, 168);
             this.lvwGames.TabIndex = 7;
             this.lvwGames.UseCompatibleStateImageBehavior = false;
             this.lvwGames.View = System.Windows.Forms.View.Details;
@@ -170,7 +170,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.gvwGame.Location = new System.Drawing.Point(0, 0);
             this.gvwGame.Name = "gvwGame";
-            this.gvwGame.Size = new System.Drawing.Size(317, 157);
+            this.gvwGame.Size = new System.Drawing.Size(400, 165);
             this.gvwGame.TabIndex = 8;
             this.gvwGame.Text = "Lobby";
             // 
@@ -178,18 +178,19 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(341, 361);
+            this.ClientSize = new System.Drawing.Size(424, 376);
             this.Controls.Add(this.scPanels);
-            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(statusStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(357, 400);
             this.Name = "MainForm";
             this.Text = "SBFL LFG";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.cmsTrayMenu.ResumeLayout(false);
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
             this.scPanels.Panel1.ResumeLayout(false);
             this.scPanels.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.scPanels)).EndInit();
@@ -208,9 +209,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem tsmQuit;
         private System.Windows.Forms.Timer tmrUpdate;
-        private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel lblRefreshStatus;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.SplitContainer scPanels;
         private System.Windows.Forms.ListView lvwGames;
         private System.Windows.Forms.ColumnHeader colGame;

@@ -38,12 +38,25 @@ namespace sbfl_lfg {
 
             lvwPlayers.Items.Clear();
 
-            foreach (PlayerInfo player in lobby.Players.Values) {
-                ListViewItem lvi = new ListViewItem();
-                lvi.Text = player.Name;
-                int minutes = player.Idle / 60;
-                lvi.SubItems.Add(string.Format("{0} minute{1}", minutes, minutes != 1 ? "s" : ""));
-                lvwPlayers.Items.Add(lvi);
+            if (lobby.Players != null) {
+                foreach (PlayerInfo player in lobby.Players.Values) {
+                    ListViewItem lvi = new ListViewItem();
+                    lvi.Text = player.Name;
+                    double minutes = player.Idle / 60;
+                    lvi.SubItems.Add(string.Format("{0} minute{1}", (int)minutes, minutes != 1 ? "s" : ""));
+
+                    string from = "Now";
+                    if (player.From.HasValue && player.From.Value > DateTime.UtcNow)
+                        from = player.From.Value.ToLocalTime().ToShortTimeString();
+                    lvi.SubItems.Add(from);
+
+                    string to = "N/A";
+                    if (player.To.HasValue && player.To.Value > DateTime.UtcNow)
+                        to = player.To.Value.ToLocalTime().ToShortTimeString();
+                    lvi.SubItems.Add(to);
+
+                    lvwPlayers.Items.Add(lvi);
+                }
             }
         }
     }
