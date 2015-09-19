@@ -21,13 +21,13 @@ namespace sbfl_lfg {
         public DateTime? To;
     }
 
-    class BotClient {
+    class SbflClient {
         public static String LfgUrl = "https://sbfl.eu/bot/lfg.php";
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private WebClient _Client;
         private object _SyncObject = new object();
    
-        public BotClient(ICredentials creds) {
+        public SbflClient(ICredentials creds) {
             _Client = new WebClient();
             _Client.Credentials = creds;
         }

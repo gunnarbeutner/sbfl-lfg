@@ -26,6 +26,7 @@ namespace sbfl_lfg {
         private void tsmPlay_Click(object sender, EventArgs e) {
             Program.MainForm.Show();
             Program.MainForm.Activate();
+            Program.MainForm.SetUpdateEvent(true);
         }
 
         private void tsmSettings_Click(object sender, EventArgs e) {
@@ -57,13 +58,13 @@ namespace sbfl_lfg {
                 lblRefreshStatus.Text = "Updating...";
                 Refresh();
 
+                UpdateGames();
+
+                LASTINPUTINFO lii = new LASTINPUTINFO();
+                lii.cbSize = Marshal.SizeOf(lii);
+                Utility.GetLastInputInfo(out lii);
+
                 try {
-                    UpdateGames();
-
-                    LASTINPUTINFO lii = new LASTINPUTINFO();
-                    lii.cbSize = Marshal.SizeOf(lii);
-                    Utility.GetLastInputInfo(out lii);
-
                     Program.BotClient.SetIdleTime((Environment.TickCount - lii.dwTime) / 1000);
                 } catch (Exception) {
                     /* Do nothing. */
@@ -136,8 +137,17 @@ namespace sbfl_lfg {
             }
         }
 
+        private void UpdateGamesThreadProc() {
+            try {
+                UpdateGamesSync();
+            } catch (Exception ex) {
+                MessageBox.Show(this, ex.ToString());
+                /* Do nothing. */
+            }
+        }
+
         private void UpdateGames() {
-            Thread t = new Thread(UpdateGamesSync);
+            Thread t = new Thread(UpdateGamesThreadProc);
             t.Start();
         }
 
@@ -189,7 +199,7 @@ namespace sbfl_lfg {
             }
 
             try {
-                UpdateGames();
+                UpdateGamesSync();
             } catch (Exception ex) {
                 MessageBox.Show(this, ex.ToString());
                 /* Do nothing. */

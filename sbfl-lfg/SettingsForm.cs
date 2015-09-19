@@ -24,7 +24,7 @@ namespace sbfl_lfg {
             NetworkCredential nc = new NetworkCredential(txtUsername.Text, txtPassword.Text);
 
             try {
-                BotClient bc = new BotClient(nc);
+                SbflClient bc = new SbflClient(nc);
                 bc.GetGames();
             } catch (WebException) {
                 MessageBox.Show(this, "The specified username and password are not valid.", "SBFL LFG", MessageBoxButtons.OK, MessageBoxIcon.Error);

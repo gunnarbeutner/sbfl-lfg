@@ -13,7 +13,7 @@ namespace sbfl_lfg {
     static class Program {
         public static MainForm MainForm;
         private static Mutex _AppMutex;
-        public static BotClient BotClient;
+        public static SbflClient BotClient;
 
         /// <summary>
         /// The main entry point for the application.
@@ -43,7 +43,7 @@ namespace sbfl_lfg {
             while (true) {
                 try {
                     NetworkCredential nc = new NetworkCredential(Properties.Settings.Default.SBFLUsername, Properties.Settings.Default.SBFLPassword);
-                    BotClient = new BotClient(nc);
+                    BotClient = new SbflClient(nc);
                     BotClient.GetGames();
                     break;
                 } catch (WebException) {
